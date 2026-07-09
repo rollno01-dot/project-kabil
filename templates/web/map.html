@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delivery Map</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI';
+            background: #f4f7fc;
+        }
+
+        .header {
+            background: #000;
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+            font-size: 20px;
+        }
+
+        #map {
+            height: 90vh;
+            width: 100%;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 70px;
+            left: 20px;
+            z-index: 999;
+            background: #FF9900;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+    Delivery Tracking Map
+</div>
+
+<a href="javascript:history.back()" class="back-btn">? Back</a>
+
+<div id="map"></div>
+
+<script>
+    // Data from Flask
+    var custLat = parseFloat("{{bill.lat}}");
+    var custLon = parseFloat("{{bill.lon}}");
+
+    var dpLat = parseFloat("{{dp.latitude}}");
+    var dpLon = parseFloat("{{dp.longitude}}");
+
+    // Initialize map
+    var map = L.map('map').setView([custLat, custLon], 13);
+
+    // Tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map'
+    }).addTo(map);
+
+    // Customer Marker (Green)
+    var custIcon = L.icon({
+        iconUrl: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png',
+        iconSize: [40, 40]
+    });
+
+    var custMarker = L.marker([custLat, custLon], {icon: custIcon}).addTo(map);
+
+    custMarker.bindPopup(
+        "<b>Customer</b><br>" +
+        "User ID: {{bill.uname}}<br>" +
+        "Order ID: {{bill.id}}"
+    );
+
+    // Delivery Person Marker (Red)
+    var dpIcon = L.icon({
+        iconUrl: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
+        iconSize: [40, 40]
+    });
+
+    var dpMarker = L.marker([dpLat, dpLon], {icon: dpIcon}).addTo(map);
+
+    dpMarker.bindPopup(
+        "<b>Delivery Person</b><br>" +
+        "Name: {{dp.name}}<br>" +
+        "Mobile: {{dp.mobile}}<br>" +
+        "User ID: {{dp.uname}}"
+    );
+
+    // Fit both markers in view
+    var group = new L.featureGroup([custMarker, dpMarker]);
+    map.fitBounds(group.getBounds());
+
+</script>
+
+</body>
+</html>

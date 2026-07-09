@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Map</title>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f7fc;
+        }
+
+        .header {
+            background: #000;
+            color: #fff;
+            padding: 12px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        #map {
+            height: 90vh;
+            width: 100%;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 70px;
+            left: 15px;
+            z-index: 999;
+            background: #FF9900;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+    Delivery Tracking Map
+</div>
+
+<a href="javascript:history.back()" class="back-btn">? Back</a>
+
+<div id="map"></div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+    // Data from Flask
+    var custLat = {{bill.lat}};
+    var custLon = {{bill.lon}};
+
+    var dpLat = {{dp.latitude}};
+    var dpLon = {{dp.longitude}};
+
+    // Create map
+    var map = L.map('map').setView([custLat, custLon], 13);
+
+    // Tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data'
+    }).addTo(map);
+
+    // Customer Marker (Green)
+    var customerIcon = L.icon({
+        iconUrl: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png',
+        iconSize: [40, 40]
+    });
+
+    var custMarker = L.marker([custLat, custLon], {icon: customerIcon}).addTo(map);
+
+    // Delivery Marker (Red)
+    var dpIcon = L.icon({
+        iconUrl: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
+        iconSize: [40, 40]
+    });
+
+    var dpMarker = L.marker([dpLat, dpLon], {icon: dpIcon}).addTo(map);
+
+    // Popup - Customer
+    custMarker.bindPopup(
+        "<b>Customer</b><br>" +
+        "User ID: {{bill.uname}}<br>" +
+        "Order ID: {{bill.id}}"
+    );
+
+    // Popup - Delivery Person
+    dpMarker.bindPopup(
+        "<b>Delivery Person</b><br>" +
+        "Name: {{dp.name}}<br>" +
+        "Mobile: {{dp.mobile}}<br>" +
+        "User ID: {{dp.uname}}"
+    );
+
+    // Optional: Auto fit both markers
+    var group = new L.featureGroup([custMarker, dpMarker]);
+    map.fitBounds(group.getBounds());
+
+</script>
+
+</body>
+</html>
